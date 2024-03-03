@@ -1,7 +1,5 @@
 package semi02.project.cafe;
 
-import semi02.project.product.Product;
-
 import java.util.ArrayList;
 
 public class Staff {
@@ -37,7 +35,9 @@ public class Staff {
         this.startTime = startTime;
         this.order = checkList.get(0);
 
-        System.out.println("- " + name + " 직원이 주문을 받았습니다. 예상 소요 시간은 " + order.getProductionTime() + "분입니다.");
+        System.out.println("- " + name + " 직원이 \"" +
+                order.getCustomer().getNickname() + "\" 고객의 주문을 받았습니다. " +
+                "예상 소요 시간은 " + order.getProductionTime() + "분입니다.");
 
         checkList.remove(0); // 직원이 맡은 주문은 주문리스트에서 삭제
     }

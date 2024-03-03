@@ -2,7 +2,6 @@ package semi02.project.cafe;
 
 import semi02.project.application.Main;
 import semi02.project.product.Product;
-import semi02.project.serve.Take;
 
 import java.util.ArrayList;
 
@@ -10,7 +9,6 @@ public class Order {
     private Customer customer;
     private ArrayList<Product> productList;
     int productionTime; // 예상 소요 시간(남은 시간)
-    private Take take; // 먹고 가는지, 포장하는지
 
     public Customer getCustomer() {
         return customer;
@@ -32,11 +30,10 @@ public class Order {
         }
     }
 
-    public Order(Customer customer, ArrayList<Product> products, Take take) {
+    public Order(Customer customer, ArrayList<Product> products) {
         this.customer = customer;
         this.productList = products;
         this.productionTime = calcProductionTime(productList);
-        this.take = take;
 
         customer.spendMoney(Main.calcPrice(products)); // 상품들 가격만큼 고객이 가진 돈 차감
     }
@@ -49,7 +46,6 @@ public class Order {
             if (product.getMachine() != null) {
                 productionTime += product.getMachine().getRunTime();
             }
-
         }
 
         return productionTime; // 제조기계 가동 시간의 합
