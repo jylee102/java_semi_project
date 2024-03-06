@@ -46,6 +46,4 @@ public abstract class Product {
     public Machine getMachine() {
         return machine;
     }
-
-    public abstract String getFullName();
 }

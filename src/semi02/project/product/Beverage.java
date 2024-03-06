@@ -16,7 +16,7 @@ public class Beverage extends Product {
     }
 
     @Override
-    public String getFullName() {
+    public String toString() {
         String name = super.getName();
 
         if (name.equals("초코")) {

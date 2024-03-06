@@ -9,6 +9,17 @@ import java.util.ArrayList;
 public class GenerateMenu {
     ArrayList<ArrayList<ArrayList<Product>>> menuList = Cafe.getInstance().getMenuList();
 
+    public String getMenu() {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append(Define.BOLD_LINE).append("주문하기").append(Define.CHANGE_LINE)
+                .append("1.커피 | 2.논커피 | 3.스낵 | 4.장바구니 | 5.대기 중인 주문").append(Define.CHANGE_LINE).append(Define.CHANGE_LINE);
+        buffer.append(Define.ALIGN_RIGHT).append("0.주문포기하기").append(Define.CHANGE_LINE);
+        buffer.append(Define.CHANGE_LINE).append(Define.INPUT_SPACE);
+
+        return buffer.toString();
+    }
+
     public String getMenu(int i) {
         StringBuffer buffer = new StringBuffer();
 
@@ -16,8 +27,6 @@ public class GenerateMenu {
         ArrayList<String> menuNameList = Cafe.getInstance().getNameLists().get(i);
 
         buffer.append(Define.LINE);
-        buffer.append("0.처음 주문 화면으로").append(Define.CHANGE_LINE);
-
         for (String menuName : menuNameList) {
             StringBuilder option = new StringBuilder(); // 구분되는 메뉴 특성(HOT/ICED 또는 flavor)
             StringBuilder prices = new StringBuilder(); // HOT/ICED 또는 맛별로 가격이 다른 경우를 고려하기 위해
@@ -33,8 +42,10 @@ public class GenerateMenu {
                             option.append("/");
                             option.append(product.isHot() ? "HOT" : "ICED");
                         } else {
-                            option.append(product.getFlavor());
                             option.append("/");
+                            if (product.getName().equals("빵"))
+                                option.append(product.getFlavor()).append(product.getName());
+                            else option.append(product.getFlavor());
                         }
 
                         prices.append(product.getPrice()).append("원/");
@@ -50,6 +61,7 @@ public class GenerateMenu {
                     .append(priceResult);
             buffer.append(Define.CHANGE_LINE);
         }
+        buffer.append(Define.ALIGN_RIGHT).append("0.처음화면으로").append(Define.CHANGE_LINE);
         buffer.append(Define.CHANGE_LINE).append(Define.INPUT_SPACE);
         return buffer.toString();
     }
@@ -60,13 +72,12 @@ public class GenerateMenu {
         ArrayList<Product> selectedMenu = menuList.get(i).get(j);
 
         buffer.append(Define.LINE);
-        buffer.append("0.처음 주문 화면으로").append(Define.CHANGE_LINE);
-
         for (Product product : selectedMenu) {
             buffer.append((selectedMenu.indexOf(product) + 1)).append(".")
-                    .append(product.getFullName()).append(Define.DEVIDER)
+                    .append(product).append(Define.DEVIDER)
                     .append(product.getPrice()).append("원").append(Define.CHANGE_LINE);
         }
+        buffer.append(Define.ALIGN_RIGHT).append("0.처음화면으로").append(Define.CHANGE_LINE);
         buffer.append(Define.CHANGE_LINE).append(Define.INPUT_SPACE);
         return buffer.toString();
     }

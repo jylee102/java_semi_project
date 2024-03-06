@@ -4,6 +4,6 @@ public class RemoveItemCommand implements Command {
 
     @Override
     public void execute(int[] idxs) {
-        myCafe.getCartProducts().remove(idxs[0]);
+        myCafe.removeCartProducts(myCafe.getOrganizedCart().get(idxs[0]));
     }
 }

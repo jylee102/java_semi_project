@@ -8,7 +8,7 @@ public class Coffee extends Product {
     }
 
     @Override
-    public String getFullName() {
+    public String toString() {
         String name = super.getName();
         if (super.isHot()) return name + "(HOT)";
         else return "아이스" + name.replace("카페", "") + "(ICED)";

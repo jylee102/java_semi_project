@@ -1,7 +1,7 @@
 package semi02.project.application;
 
 import semi02.project.cafe.*;
-import semi02.project.cafe.generateString.*;
+import semi02.project.cafe.generateString.generateList.*;
 import semi02.project.callback.*;
 import semi02.project.product.*;
 import semi02.project.machine.*;
@@ -16,9 +16,11 @@ public class Main {
     static Machine coffeeMachine, microwave, blender;
     static ArrayList<Customer> customers = new ArrayList<>();
 
-    static GenerateMenu menu = new GenerateMenu();
-    static Command removeItem = new RemoveItemCommand();
+    static GenerateCartList cartList = new GenerateCartList();
+    static GenerateWaitingList waitingList = new GenerateWaitingList();
+
     static Command selectMenu = new SelectMenuCommand();
+    static Command removeItem = new RemoveItemCommand();
 
     static boolean ordering;
 
@@ -33,7 +35,6 @@ public class Main {
         while (run) {
 
             if (myCafe.getOrderList().isEmpty() && customers.isEmpty()) run = false; // 남은 손님과 주문이 없으면 영업 종료
-
             app.checkOrder(workedTime); // 주문 확인 및 작업
 
             System.out.print("> ");
@@ -45,8 +46,7 @@ public class Main {
                     break;
 
                 case "5":
-                    app.waitingStatus();
-                    System.out.print(Define.CHANGE_LINE);
+                    System.out.println(waitingList.getList());
                     break;
 
                 case "0", "o":
@@ -55,18 +55,13 @@ public class Main {
                     ordering = true;
 
                     while (ordering) {
-
-                        System.out.print(Define.BOLD_LINE);
-                        System.out.println("주문하기 (취소하려면 0)");
-                        System.out.println("1.커피 | 2.논커피 | 3.스낵 | 4.장바구니 | 5.대기 중인 주문");
-                        System.out.print(Define.CHANGE_LINE);
-
-                        System.out.print(Define.INPUT_SPACE);
-                        int orderInput = app.testScanInt();
+                        myCafe.printMenuInfo();
+                        int orderInput = app.getInputUntilInRange(0, 5);
 
                         switch (orderInput) {
                             case Define.LEAVE: // 주문 취소
-                                System.out.println(Define.LINE + "- \"" + customers.get(0).getNickname() + "\" 고객님이 떠났습니다." + Define.LINE);
+                                System.out.println(Define.LINE + "- \"" + customers.get(0).getNickname() + "\" 고객님이 " +
+                                        "떠났습니다." + Define.LINE);
                                 app.quitOrder();
                                 break;
 
@@ -89,7 +84,7 @@ public class Main {
                                 break;
 
                             case 5: // 주문대기현황 보기
-                                app.waitingStatus();
+                                System.out.print(waitingList.getList());
                                 break;
                         }
                     }
@@ -145,18 +140,25 @@ public class Main {
         myCafe.addBeverageMenu(new Beverage("초코", "", 3200, false));
         myCafe.addBeverageMenu(new Beverage("아이스티", "복숭아", 3000, false));
         myCafe.addBeverageMenu(new Beverage("아이스티", "레몬", 3000, false));
-        myCafe.addBeverageMenu(new Beverage("차", "레몬", 3000, true));
-        myCafe.addBeverageMenu(new Beverage("차", "유자", 3000, true));
+        myCafe.addBeverageMenu(new Beverage("차", "레몬", 3300, true));
+        myCafe.addBeverageMenu(new Beverage("차", "유자", 3300, true));
+        myCafe.addBeverageMenu(new Beverage("차", "사과유자", 3500, true));
 
         myCafe.addBeverageMenu(new Beverage("주스", "딸기", 3800, false, blender));
         myCafe.addBeverageMenu(new Beverage("주스", "키위", 3800, false, blender));
 
         // 스낵 메뉴
-        myCafe.addSnackMenu(new Snack("쿠키", "초코", 2000, true, microwave));
-        myCafe.addSnackMenu(new Snack("쿠키", "아몬드", 2000, true, microwave));
+        myCafe.addSnackMenu(new Snack("쿠키", "초코", 2000, false));
+        myCafe.addSnackMenu(new Snack("쿠키", "아몬드", 2000, false));
+        myCafe.addSnackMenu(new Snack("쿠키", "초코스모어", 2900, true, microwave));
+        myCafe.addSnackMenu(new Snack("쿠키", "말차스모어", 2900, true, microwave));
+
         myCafe.addSnackMenu(new Snack("케익", "초코", 6000, false));
         myCafe.addSnackMenu(new Snack("케익", "딸기", 6000, false));
         myCafe.addSnackMenu(new Snack("케익", "당근", 6000, false));
+
+        myCafe.addSnackMenu(new Snack("빵", "소금", 3200, true, microwave));
+        myCafe.addSnackMenu(new Snack("빵", "피자", 3800, true, microwave));
 
         // 커피 + 음료 + 스낵
         myCafe.makeMenuList();
@@ -164,6 +166,7 @@ public class Main {
 
     public void createCustomers() {
         Customer regularCustomer = new Customer(50000, "단골");
+
         customers.add(new Customer(10000, "온리아아"));
         customers.add(regularCustomer);
         customers.add(new Customer(30000, "카페인중독"));
@@ -188,16 +191,7 @@ public class Main {
                     break;
                 }
             }
-            if (allBusy) System.out.println("- 현재는 모든 직원이 바빠서 주문을 받을 수 없습니다. 잠시만 기다려주세요.");
-        }
-    }
-
-    public void waitingStatus() {
-        System.out.print(Define.LINE);
-        if (myCafe.getOrderList().isEmpty()) System.out.println("현재 대기가 없습니다.");
-        for (Order order : myCafe.getOrderList()) {
-            System.out.println(order.getCustomer().getNickname() + "고객님의 주문" + Define.DEVIDER
-                    + "예상 소요 시간: " + order.getProductionTime() + "분");
+            if (allBusy) System.out.println("- 모든 직원이 바빠서 주문이 밀려 있습니다.");
         }
     }
 
@@ -218,40 +212,45 @@ public class Main {
 
     /* 고객 관련 작업 */
     public void order(int orderInput) {
-        ArrayList<ArrayList<ArrayList<Product>>> menuList = myCafe.getMenuList();
         int categoryIdx = orderInput - 1;
         if (categoryIdx == Define.GO_BACK) return;
 
-        System.out.print(menu.getMenu(categoryIdx));
+        myCafe.printMenuInfo(categoryIdx);
         int menuIdx = testScanInt() - 1;
         if (menuIdx == Define.GO_BACK) return;
 
-        excuteIfAvailableIdx(menuList.get(categoryIdx), menuIdx, selectMenu, new int[]{categoryIdx, menuIdx});
+        excuteIfAvailableIdx(selectMenu, new int[]{categoryIdx, menuIdx});
     }
 
     public int checkCart(Customer customer) {
-        System.out.print(new GenerateCartList().getReceipt(myCafe.getCartProducts()));
+        myCafe.setOrganizedCart();
+        ArrayList<Product> cartProducts = myCafe.getOrganizedCart();
+
+        System.out.print(cartList.getList());
         System.out.println("(현재 \"" + customer.getNickname() + "\" 고객이 소지한 금액: " +
                 customer.getMoney() + "원)" + Define.CHANGE_LINE);
         System.out.print(Define.INPUT_SPACE);
 
-        switch (testScanInt()) {
+        int selectionInput = getInputUntilInRange(0, 5);
+
+        switch (selectionInput) {
             case 1: // 결제 시도
-                if (customer.getMoney() < calcPrice(myCafe.getCartProducts())) {
-                    System.out.print(Define.LINE + "- Error: 금액이 부족합니다.");
+                if (customer.getMoney() < calcPrice(cartProducts)) {
+                    System.out.print(Define.LINE + "[Error] 금액이 부족합니다.");
                     return Define.TRY_AGAIN;
                 }
-                if (myCafe.getCartProducts().isEmpty()) {
-                    System.out.print(Define.LINE + "- Error: 구매할 상품이 없습니다.");
+                if (cartProducts.isEmpty()) {
+                    System.out.print(Define.LINE + "[Error] 구매할 상품이 없습니다.");
                     return Define.TRY_AGAIN;
+
                 } else { // 결제 및 주문 성공
-                    myCafe.addOrder(new Order(customer, myCafe.getCartProducts()));
-                    myCafe.increaseSales(calcPrice(myCafe.getCartProducts())); // 매출 증가
+                    myCafe.addOrder(new Order(customer, cartProducts));
+                    myCafe.increaseSales(calcPrice(cartProducts)); // 매출 증가
                     myCafe.clearCart(); // 장바구니 비우기 (다음 사람을 위해)
 
                     System.out.print(Define.LINE);
                     System.out.println("- 주문에 성공했습니다");
-                    System.out.print("- 손님에게 남은 금액: " + customer.getMoney() + "원");
+                    System.out.print("- " + customer.getNickname() + " 고객에게 남은 금액: " + customer.getMoney() + "원");
                     System.out.print(Define.LINE);
 
                     return Define.LEAVE;
@@ -262,15 +261,39 @@ public class Main {
 
             case 3: // 장바구니에서 아이템 빼기
                 System.out.print(Define.LINE);
-                System.out.println("몇 번째 상품을 삭제하시겠습니까?");
+                System.out.println("몇 번째 상품을 삭제하시겠습니까? (뒤로 가려면 0)");
                 System.out.print(Define.INPUT_SPACE);
-
                 int indexToDelete = testScanInt() - 1;
-                excuteIfAvailableIdx(myCafe.getCartProducts(), indexToDelete, removeItem, new int[]{indexToDelete});
+
+                if (indexToDelete == Define.GO_BACK) return Define.TRY_AGAIN;
+                excuteIfAvailableIdx(removeItem, new int[]{indexToDelete});
 
                 return Define.TRY_AGAIN;
 
-            case 4: // 카페 이용하지 않고 손님 떠남
+            case 4:
+                System.out.print(Define.LINE);
+                System.out.println("몇 번째 상품의 수량을 바꾸시겠습니까? (뒤로 가려면 0)");
+                System.out.print(Define.INPUT_SPACE);
+
+                int targetIndex = testScanInt() - 1;
+                Product targetProduct;
+
+                if (targetIndex == Define.GO_BACK) return Define.TRY_AGAIN;
+
+                try {
+                    targetProduct = cartProducts.get(targetIndex);
+                } catch (IndexOutOfBoundsException e) {
+                    System.out.println("[Error] 잘못된 입력값입니다.");
+                    return Define.TRY_AGAIN;
+                }
+
+                System.out.println(Define.CHANGE_LINE + "구매할 상품의 수량을 입력하세요.");
+                System.out.print(Define.INPUT_SPACE);
+                myCafe.changeNumOfItem(targetProduct, testScanInt());
+
+                return Define.TRY_AGAIN;
+
+            case 5: // 카페 이용하지 않고 손님 떠남
                 System.out.println(Define.LINE + "- \"" + customers.get(0).getNickname() + "\" 고객님이 떠났습니다." + Define.LINE);
                 return Define.LEAVE;
 
@@ -281,19 +304,48 @@ public class Main {
 
     public void quitOrder() {
         myCafe.clearCart(); // 다음 사람을 위해 카트 비우기
-        scanner.nextLine(); // 엔터 소비
         customers.remove(0);
         ordering = false;
     }
 
     /* 편의를 위한 메소드 */
-    // 입력값이 int형이 맞는지 검사, 아니라면 int형을 입력할 때까지 반복
-    public int testScanInt() {
-        while (!scanner.hasNextInt()) {
-            System.out.println(Define.INPUT_SPACE);
-            scanner.nextLine();
+    // 범위 안의 숫자값을 받을 때까지 입력받기
+    public int getInputUntilInRange(int min, int max) {
+        int input;
+
+        while (true) {
+            input = testScanInt();
+
+            if (input < min || input > max) {
+                System.out.println("[Error] 잘못된 입력값입니다.");
+                System.out.print(Define.INPUT_SPACE);
+            } else break;
         }
-        return scanner.nextInt();
+
+        return input;
+    }
+
+    // 입력값이 숫자형이 맞는지 검사, 아니라면 숫자형을 입력할 때까지 반복
+    public static int testScanInt() {
+        String input = scanner.nextLine();
+        while (!isNumeric(input) || input.isBlank()) {
+            if (!input.isBlank()) System.out.println("[Error] 잘못된 입력값입니다.");
+            System.out.print(Define.INPUT_SPACE);
+            input = scanner.nextLine();
+        }
+        return Integer.parseInt(input);
+    }
+
+    public static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            int i = Integer.parseInt(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     // 상품들의 가격 계산하는 메소드
@@ -307,11 +359,25 @@ public class Main {
 
     // IndexOutOfBoundsException 방지 위해서 사용자가 입력한 값이 ArrayList 인덱스 범위 안인지 확인
     // Command라는 인터페이스를 만들어서 자바스크립트의 콜백함수처럼 사용
-    public static void excuteIfAvailableIdx(ArrayList arr, int idx, Command command, int[] idxs) {
+    public static void excuteIfAvailableIdx(Command command, int[] idxs) {
+
+        ArrayList arr = null;
+        int idx = idxs[idxs.length - 1];
+
+        arr = switch (idxs.length) {
+            case 1 -> myCafe.getCartProducts();
+            case 2 -> myCafe.getMenuList().get(idxs[0]);
+            case 3 -> myCafe.getMenuList().get(idxs[0]).get(idxs[1]);
+            default -> arr;
+        };
+
         if (0 <= idx && idx < arr.size()) {
             command.execute(idxs);
         } else {
-            System.out.print(Define.LINE + "- Error: 잘못된 입력값입니다.");
+            System.out.println("[Error] 잘못된 입력값입니다.");
+            System.out.print(Define.INPUT_SPACE);
+            idxs[idxs.length - 1] = testScanInt() - 1;
+            excuteIfAvailableIdx(command, idxs); // 재귀함수
         }
     }
 }

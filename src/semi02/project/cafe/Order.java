@@ -40,7 +40,7 @@ public class Order {
 
 
     public int calcProductionTime(ArrayList<Product> productList) {
-        int productionTime = productList.size(); // 대충 메뉴 하나당 1분
+        int productionTime = Cafe.getInstance().getCartProducts().size(); // 대충 메뉴 하나당 1분
 
         for (Product product : productList) {
             if (product.getMachine() != null) {

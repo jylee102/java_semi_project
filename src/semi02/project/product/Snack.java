@@ -16,7 +16,10 @@ public class Snack extends Product {
     }
 
     @Override
-    public String getFullName() {
-        return super.getFlavor() + super.getName();
+    public String toString() {
+        String result = super.getFlavor() + super.getName();
+
+        if (super.isHot()) result += "(HOT)";
+        return result;
     }
 }
