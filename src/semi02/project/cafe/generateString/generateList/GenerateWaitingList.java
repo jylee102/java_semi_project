@@ -4,9 +4,8 @@ import semi02.project.cafe.Cafe;
 import semi02.project.cafe.Order;
 import semi02.project.utils.Define;
 
-public class GenerateWaitingList {
-    Cafe myCafe = Cafe.getInstance();
-
+public class GenerateWaitingList implements GenerateList {
+    @Override
     public String getList() {
         StringBuffer buffer = new StringBuffer();
 

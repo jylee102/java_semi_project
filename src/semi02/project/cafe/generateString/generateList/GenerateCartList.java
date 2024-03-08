@@ -7,9 +7,8 @@ import semi02.project.utils.Define;
 
 import java.util.*;
 
-public class GenerateCartList {
-    Cafe myCafe = Cafe.getInstance();
-
+public class GenerateCartList implements GenerateList {
+    @Override
     public String getList() {
         StringBuffer buffer = new StringBuffer();
 

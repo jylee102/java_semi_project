@@ -1,6 +1,7 @@
 package semi02.project.cafe;
 
 import semi02.project.cafe.generateString.GenerateMenu;
+import semi02.project.machine.Machine;
 import semi02.project.product.*;
 
 import java.util.*;
@@ -9,6 +10,7 @@ public class Cafe {
     private static Cafe instance = null;
 
     private final ArrayList<Staff> staffList = new ArrayList<>();
+    private final Map<String, Machine[]> machineList = new HashMap<>();
 
     // 손님이 보는 주문 리스트. 직원이 일을 완료하고 상품을 내어줄 때 요소 삭제
     private final ArrayList<Order> orderList = new ArrayList<>();
@@ -47,13 +49,23 @@ public class Cafe {
         return instance;
     }
 
-    /* 직원 관련 */
+    /* 초기 세팅 관련 */
     public void addStaff(Staff[] staffList) {
         this.staffList.addAll(List.of(staffList));
     }
 
     public ArrayList<Staff> getStaffList() {
         return staffList;
+    }
+
+    public void installMachines(Machine[] coffeeMachine, Machine[] blender, Machine[] microwave) {
+        this.machineList.put("커피머신", coffeeMachine);
+        this.machineList.put("믹서", blender);
+        this.machineList.put("전자레인지", microwave);
+    }
+
+    public Map<String, Machine[]> getMachineList() {
+        return machineList;
     }
 
     /* 주문 리스트 관련 */
@@ -143,6 +155,10 @@ public class Cafe {
         snackMenus.add(snack);
     }
 
+    public ArrayList<Product> getSnackMenus() {
+        return snackMenus;
+    }
+
     public void makeMenuList() {
         nameLists.add(mergeSameName(coffeeMenus));
         nameLists.add(mergeSameName(beverageMenus));
@@ -220,16 +236,22 @@ public class Cafe {
         return menuNameList;
     }
 
-    // 중복 요소 제거하여 장바구니 리스트 재구성
-    private ArrayList<Product> restructureList(ArrayList<Product> products) {
 
+    public static ArrayList<Product> restructureList(ArrayList<Product> products) {
+
+        // 중복 요소 제거하여 리스트 재구성
         ArrayList<Product> productList = new ArrayList<>();
-
         for (Product product : products) {
             if (!productList.contains(product)) {
                 productList.add(product);
             }
         }
+
+        // ArrayList 안의 객체 빈도수가 많은 순으로 정렬
+        Comparator<Product> productFrequencyComparator =
+                Comparator.comparingInt(p -> Collections.frequency(products, p));
+        productList.sort(productFrequencyComparator.reversed());
+
         return productList;
     }
 }

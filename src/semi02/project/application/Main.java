@@ -13,29 +13,30 @@ public class Main {
     static Scanner scanner = new Scanner(System.in);
 
     static Cafe myCafe = Cafe.getInstance(); // 카페 생성
-    static Machine coffeeMachine, microwave, blender;
+    public static Machine coffeeMachine1, coffeeMachine2, blender1, blender2, microwave1;
     static ArrayList<Customer> customers = new ArrayList<>();
 
-    static GenerateCartList cartList = new GenerateCartList();
-    static GenerateWaitingList waitingList = new GenerateWaitingList();
+    static GenerateList cartList = new GenerateCartList();
+    static GenerateList waitingList = new GenerateWaitingList();
 
     static Command selectMenu = new SelectMenuCommand();
     static Command removeItem = new RemoveItemCommand();
 
     static boolean ordering;
 
+    static int workedTime = 0; // 영업한 시간
+
     public static void main(String[] args) {
         Main app = new Main();
 
         app.readyToOpen();
-        int workedTime = 0; // 영업한 시간
 
         boolean run = true;
 
         while (run) {
 
             if (myCafe.getOrderList().isEmpty() && customers.isEmpty()) run = false; // 남은 손님과 주문이 없으면 영업 종료
-            app.checkOrder(workedTime); // 주문 확인 및 작업
+            app.checkOrder();
 
             System.out.print("> ");
             String input = scanner.nextLine();
@@ -116,9 +117,15 @@ public class Main {
     }
 
     public void installMachines() {
-        coffeeMachine = new CoffeeMachine();
-        microwave = new Microwave();
-        blender = new Blender();
+        coffeeMachine1 = new CoffeeMachine();
+        coffeeMachine2 = new CoffeeMachine();
+        blender1 = new Blender();
+        blender2 = new Blender();
+        microwave1 = new Microwave();
+
+        myCafe.installMachines(new Machine[]{coffeeMachine1, coffeeMachine2},
+                new Machine[]{blender1, blender2}
+                , new Machine[]{microwave1});
     }
 
     public void employStaffs() {
@@ -127,6 +134,10 @@ public class Main {
     }
 
     public void createMenu() {
+        Machine coffeeMachine = new CoffeeMachine();
+        Machine microwave = new Microwave();
+        Machine blender = new Blender();
+
         // 커피 메뉴
         myCafe.addCoffeeMenu(new Coffee("아메리카노", 1500, true, coffeeMachine));
         myCafe.addCoffeeMenu(new Coffee("아메리카노", 2000, false, coffeeMachine));
@@ -177,37 +188,74 @@ public class Main {
 
     /* 프로그램 작동에 사용되는 메소드 */
     /* 직원 관련 작업 */
-    public void checkOrder(int workedTime) {
+    // (직원 확인용) 주문이 쌓여있으면 쉬고 있는 직원이 주문을 받음
+    // 모든 직원이 일하고 있는지 boolean값을 반환
+    public boolean checkOrder() {
         ArrayList<Order> checkList = myCafe.getCheckList(); // 직원 확인용 주문 리스트
 
-        if (!checkList.isEmpty()) {// (직원 확인용) 주문이 쌓여있으면 쉬고 있는 직원이 주문을 받음
-
-            boolean allBusy = true; // 남은 직원이 없는지 확인하는 플래그
-
+        if (!checkList.isEmpty()) {
             for (Staff staff : myCafe.getStaffList()) {
                 if (!staff.isWorking()) {
                     staff.work(checkList, workedTime);
-                    allBusy = false;
-                    break;
+                    return false;
                 }
             }
-            if (allBusy) System.out.println("- 모든 직원이 바빠서 주문이 밀려 있습니다.");
+            return true;
         }
+        return false;
     }
 
     public void working() {
         for (Staff staff : myCafe.getStaffList()) {
             if (staff.isWorking()) {
-                staff.getOrder().setProductionTime(staff.getOrder().getProductionTime() - 1);
-                if (staff.getOrder().getProductionTime() <= 0) {
+                Order order = staff.getOrder();
+                order.setProductionTime(order.getProductionTime() - 1);
+
+                if (order.getProductionTime() <= 0) { // 주문받은 일 완료
+                    System.out.println(getCallMessage(staff));
                     staff.setWorking(false);
-                    myCafe.removeOrder(staff.getOrder());
-                    System.out.println("- " + staff.getName() + " 직원: \""
-                            + staff.getOrder().getCustomer().getNickname() + "\"" + " 고객님, " +
-                            "주문하신 상품 나왔습니다.");
+                    myCafe.removeOrder(order);
                 }
             }
         }
+    }
+
+    public String getCallMessage(Staff staff) {
+        Order order = staff.getOrder();
+        ArrayList<Product> orderedProducts = Cafe.restructureList(order.getProductList());
+        int numOfKind = orderedProducts.size();
+
+        StringBuilder productStr = new StringBuilder();
+
+        productStr.append("- ").append(staff.getName()).append(" 직원: \"")
+                .append(order.getCustomer().getNickname()).append("\"").append(" 고객님, ")
+                .append("주문하신 ");
+
+        if (1 < numOfKind && numOfKind < 4) {
+            for (int i = 0; i < numOfKind; i++) {
+                Product product = orderedProducts.get(i);
+
+                productStr.append(product).append(" ")
+                        .append(Collections.frequency(order.getProductList(), product))
+                        .append(myCafe.getSnackMenus().contains(product) ? "개" : "잔");
+                ;
+
+                if (i < numOfKind - 1) {
+                    productStr.append(", ");
+                }
+            }
+        } else {
+            Product product = orderedProducts.get(0);
+
+            productStr.append(product).append(" ")
+                    .append(Collections.frequency(order.getProductList(), product))
+                    .append(myCafe.getSnackMenus().contains(product) ? "개" : "잔");
+
+            if (numOfKind > 3) productStr.append(" 등");
+        }
+        productStr.append(" 나왔습니다.");
+
+        return productStr.toString();
     }
 
     /* 고객 관련 작업 */
@@ -224,7 +272,7 @@ public class Main {
 
     public int checkCart(Customer customer) {
         myCafe.setOrganizedCart();
-        ArrayList<Product> cartProducts = myCafe.getOrganizedCart();
+        ArrayList<Product> cartProducts = myCafe.getCartProducts();
 
         System.out.print(cartList.getList());
         System.out.println("(현재 \"" + customer.getNickname() + "\" 고객이 소지한 금액: " +
@@ -244,14 +292,18 @@ public class Main {
                     return Define.TRY_AGAIN;
 
                 } else { // 결제 및 주문 성공
-                    myCafe.addOrder(new Order(customer, cartProducts));
+                    // 얕은 복사. cartProducts 자체를 넣으면 장바구니 비울 때 주문된 리스트들도 함께 지워짐
+                    myCafe.addOrder(new Order(customer, (ArrayList<Product>) cartProducts.clone()));
                     myCafe.increaseSales(calcPrice(cartProducts)); // 매출 증가
                     myCafe.clearCart(); // 장바구니 비우기 (다음 사람을 위해)
+
 
                     System.out.print(Define.LINE);
                     System.out.println("- 주문에 성공했습니다");
                     System.out.print("- " + customer.getNickname() + " 고객에게 남은 금액: " + customer.getMoney() + "원");
                     System.out.print(Define.LINE);
+
+                    if (checkOrder()) System.out.println("- 모든 직원이 바빠서 주문이 밀려 있습니다.");
 
                     return Define.LEAVE;
                 }
@@ -281,7 +333,7 @@ public class Main {
                 if (targetIndex == Define.GO_BACK) return Define.TRY_AGAIN;
 
                 try {
-                    targetProduct = cartProducts.get(targetIndex);
+                    targetProduct = myCafe.getOrganizedCart().get(targetIndex);
                 } catch (IndexOutOfBoundsException e) {
                     System.out.println("[Error] 잘못된 입력값입니다.");
                     return Define.TRY_AGAIN;

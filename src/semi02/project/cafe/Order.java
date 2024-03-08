@@ -1,6 +1,7 @@
 package semi02.project.cafe;
 
 import semi02.project.application.Main;
+import semi02.project.machine.Machine;
 import semi02.project.product.Product;
 
 import java.util.ArrayList;
@@ -33,21 +34,25 @@ public class Order {
     public Order(Customer customer, ArrayList<Product> products) {
         this.customer = customer;
         this.productList = products;
-        this.productionTime = calcProductionTime(productList);
+        this.productionTime = calcProductionTime();
 
-        customer.spendMoney(Main.calcPrice(products)); // 상품들 가격만큼 고객이 가진 돈 차감
+        customer.spendMoney(Main.calcPrice(this.productList)); // 상품들 가격만큼 고객이 가진 돈 차감
     }
 
 
-    public int calcProductionTime(ArrayList<Product> productList) {
-        int productionTime = Cafe.getInstance().getCartProducts().size(); // 대충 메뉴 하나당 1분
+    public int calcProductionTime() {
+        int productionTime = productList.size(); // 대충 메뉴 하나당 1분
 
         for (Product product : productList) {
+            Machine machine = product.getMachine();
             if (product.getMachine() != null) {
-                productionTime += product.getMachine().getRunTime();
-            }
+                machine.setWorking(true);
+                machine.increaseUsage();
+            } else productionTime++;
         }
 
-        return productionTime; // 제조기계 가동 시간의 합
+//        productionTime += Main.coffeeMachine.getRunTime() + Main.microwave.getRunTime() + Main.blender.getRunTime();
+
+        return productionTime;
     }
 }
