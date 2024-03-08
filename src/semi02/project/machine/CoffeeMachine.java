@@ -5,6 +5,7 @@ public class CoffeeMachine implements Machine {
     private final static int RUN_TIME = 3;
 
     private boolean isWorking = false;
+    private int timeRemaining; // 작동 끝나기까지 남은 시간
 
     @Override
     public boolean isWorking() {
@@ -14,6 +15,16 @@ public class CoffeeMachine implements Machine {
     @Override
     public void setWorking(boolean working) {
         isWorking = working;
+    }
+
+    @Override
+    public int getTimeRemaining() {
+        return timeRemaining;
+    }
+
+    @Override
+    public void reduceTimeRemaining() {
+        timeRemaining--;
     }
 
     @Override
@@ -28,6 +39,8 @@ public class CoffeeMachine implements Machine {
 
     @Override
     public int getRunTime() {
-        return usage * RUN_TIME;
+        int time = usage * RUN_TIME;
+        this.timeRemaining += time;
+        return time;
     }
 }

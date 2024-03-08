@@ -94,6 +94,7 @@ public class Main {
                 default:
                     workedTime++; // 시간의 흐름
                     app.working();
+                    app.running();
                     break;
             }
         }
@@ -258,6 +259,21 @@ public class Main {
         return productStr.toString();
     }
 
+    /* 기계 관련 작업 */
+    public void running() {
+        Set<Map.Entry<String, Machine[]>> entrySet = myCafe.getMachineList().entrySet();
+
+        for (Map.Entry<String, Machine[]> entry : entrySet) {
+            for (Machine machine : entry.getValue()) {
+                if (machine.isWorking()) machine.reduceTimeRemaining();
+
+                if (machine.getTimeRemaining() <= 0) { // 맡은 일 완료
+                    machine.setWorking(false);
+                }
+            }
+        }
+    }
+
     /* 고객 관련 작업 */
     public void order(int orderInput) {
         int categoryIdx = orderInput - 1;
@@ -293,7 +309,50 @@ public class Main {
 
                 } else { // 결제 및 주문 성공
                     // 얕은 복사. cartProducts 자체를 넣으면 장바구니 비울 때 주문된 리스트들도 함께 지워짐
-                    myCafe.addOrder(new Order(customer, (ArrayList<Product>) cartProducts.clone()));
+                    ArrayList<Product> productsToBuy = (ArrayList<Product>) cartProducts.clone();
+                    ArrayList<Coffee> coffeeMenu = new ArrayList<>();
+                    ArrayList<Beverage> juiceMenu = new ArrayList<>();
+                    ArrayList<Snack> needToBeHeatMenu = new ArrayList<>();
+
+                    ArrayList<Machine> availableCoffeeMachine = new ArrayList<>();
+                    for (Machine coffeeMachine : myCafe.getMachineList().get("커피머신")) {
+                        if (!coffeeMachine.isWorking()) availableCoffeeMachine.add(coffeeMachine);
+                    }
+                    ArrayList<Machine> availableBlender = new ArrayList<>();
+                    for (Machine blender : myCafe.getMachineList().get("믹서")) {
+                        if (!blender.isWorking()) availableBlender.add(blender);
+                    }
+                    ArrayList<Machine> availableMicrowave = new ArrayList<>();
+                    for (Machine microwave : myCafe.getMachineList().get("전자레인지")) {
+                        if (!microwave.isWorking()) availableMicrowave.add(microwave);
+                    }
+
+                    for (Product cartProduct : cartProducts) {
+                        switch (cartProduct.getMachine().getClass().getSimpleName()) {
+                            case "Coffee":
+                                if (availableCoffeeMachine.isEmpty()) { // 기계가 모두 작동 중
+                                    Machine theFastestMachine = null;
+                                    int theFastestTime = myCafe.getMachineList().get("커피머신")[0].getTimeRemaining();
+                                    for (Machine coffeeMachine : myCafe.getMachineList().get("커피머신")) {
+                                        if (coffeeMachine.getTimeRemaining() < theFastestTime) {
+                                            theFastestMachine = coffeeMachine;
+                                            theFastestTime = coffeeMachine.getTimeRemaining();
+                                        }
+                                    }
+                                }
+                                break;
+
+                            case "Beverage":
+
+                                break;
+
+                            case "Snack":
+
+                                break;
+                        }
+                    }
+
+                    myCafe.addOrder(new Order(customer, productsToBuy));
                     myCafe.increaseSales(calcPrice(cartProducts)); // 매출 증가
                     myCafe.clearCart(); // 장바구니 비우기 (다음 사람을 위해)
 

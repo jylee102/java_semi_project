@@ -5,6 +5,10 @@ public interface Machine {
 
     public boolean isWorking();
 
+    public int getTimeRemaining();
+
+    public void reduceTimeRemaining();
+
     public void setWorking(boolean working);
 
     public void increaseUsage();

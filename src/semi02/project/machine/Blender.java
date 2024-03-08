@@ -7,6 +7,8 @@ public class Blender implements Machine {
     private boolean isWorking = false;
     private boolean isClean = false;
 
+    private int timeRemaining; // 작동 끝나기까지 남은 시간
+
     @Override
     public boolean isWorking() {
         return isWorking;
@@ -15,6 +17,16 @@ public class Blender implements Machine {
     @Override
     public void setWorking(boolean working) {
         isWorking = working;
+    }
+
+    @Override
+    public int getTimeRemaining() {
+        return timeRemaining;
+    }
+
+    @Override
+    public void reduceTimeRemaining() {
+        timeRemaining--;
     }
 
     @Override
