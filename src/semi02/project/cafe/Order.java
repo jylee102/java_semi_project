@@ -1,15 +1,25 @@
 package semi02.project.cafe;
 
 import semi02.project.application.Main;
-import semi02.project.machine.Machine;
+import semi02.project.machine.*;
 import semi02.project.product.Product;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class Order {
+    Cafe myCafe = Cafe.getInstance();
+
     private Customer customer;
     private ArrayList<Product> productList;
-    int productionTime; // 예상 소요 시간(남은 시간)
+    int productionTime = 0; // 예상 소요 시간(남은 시간)
+
+    public Order(Customer customer, ArrayList<Product> products) {
+        this.customer = customer;
+        this.productList = products;
+        this.productionTime = calcProductionTime();
+
+        customer.spendMoney(Main.calcPrice(this.productList)); // 상품들 가격만큼 고객이 가진 돈 차감
+    }
 
     public Customer getCustomer() {
         return customer;
@@ -27,31 +37,27 @@ public class Order {
         this.productionTime = productionTime;
 
         if (productionTime < 0) {
-            Cafe.getInstance().getOrderList().remove(0);
+            myCafe.getOrderList().remove(0);
         }
     }
-
-    public Order(Customer customer, ArrayList<Product> products) {
-        this.customer = customer;
-        this.productList = products;
-        this.productionTime = calcProductionTime();
-
-        customer.spendMoney(Main.calcPrice(this.productList)); // 상품들 가격만큼 고객이 가진 돈 차감
-    }
-
 
     public int calcProductionTime() {
-        int productionTime = productList.size(); // 대충 메뉴 하나당 1분
+        int productionTime = productList.size(); // 대충 메뉴 하나당 1분의 기계 조작 시간 및 준비 시간
 
         for (Product product : productList) {
-            Machine machine = product.getMachine();
-            if (product.getMachine() != null) {
-                machine.setWorking(true);
-                machine.increaseUsage();
-            } else productionTime++;
+            if (product.getMachine() != null) product.getMachine().addWork(product);
+            else productionTime++;
         }
 
-//        productionTime += Main.coffeeMachine.getRunTime() + Main.microwave.getRunTime() + Main.blender.getRunTime();
+        TreeSet<Integer> runTimes = new TreeSet<>();
+
+        for (String k : myCafe.getMachineList().keySet()) {
+            Machine[] v = myCafe.getMachineList().get(k);
+            for (Machine machine : v) {
+                runTimes.add(machine.getRunTime());
+            }
+        }
+        productionTime += runTimes.last();
 
         return productionTime;
     }

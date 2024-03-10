@@ -1,23 +1,16 @@
 package semi02.project.machine;
 
+import semi02.project.product.Product;
+
+import java.util.ArrayList;
+
 public class Blender implements Machine {
-    private int usage = INITIAL_USAGE;
     private final static int RUN_TIME = 5;
 
     private boolean isWorking = false;
-    private boolean isClean = false;
 
     private int timeRemaining; // 작동 끝나기까지 남은 시간
-
-    @Override
-    public boolean isWorking() {
-        return isWorking;
-    }
-
-    @Override
-    public void setWorking(boolean working) {
-        isWorking = working;
-    }
+    private ArrayList<Product> remainingWork = new ArrayList<>();
 
     @Override
     public int getTimeRemaining() {
@@ -30,17 +23,37 @@ public class Blender implements Machine {
     }
 
     @Override
-    public void increaseUsage() {
-        usage++;
+    public void addWork(Product product) {
+        remainingWork.add(product);
     }
 
     @Override
-    public void clearUsage() {
-        usage = INITIAL_USAGE;
+    public boolean isWorking() {
+        return isWorking;
+    }
+
+    @Override
+    public void setWorking(boolean working) {
+        isWorking = working;
     }
 
     @Override
     public int getRunTime() {
-        return usage * RUN_TIME;
+        ArrayList<Product> typeOfWork = null;
+
+        // 같은 주스는 한 번에 갈기 // 중복 요소 제거하여 리스트 재구성
+        if (!remainingWork.isEmpty()) {
+            typeOfWork = new ArrayList<>();
+
+            for (Product work : remainingWork) {
+                if (!typeOfWork.contains(work)) {
+                    typeOfWork.add(work);
+                }
+            }
+        }
+
+        int time = (!remainingWork.isEmpty()) ? typeOfWork.size() * RUN_TIME : 0;
+        this.timeRemaining += time;
+        return time;
     }
 }

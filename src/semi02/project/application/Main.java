@@ -12,8 +12,12 @@ import java.util.*;
 public class Main {
     static Scanner scanner = new Scanner(System.in);
 
-    static Cafe myCafe = Cafe.getInstance(); // 카페 생성
+    static Cafe myCafe = Cafe.getInstance(); // 카페
+
     public static Machine coffeeMachine1, coffeeMachine2, blender1, blender2, microwave1;
+    int machineIdxs[] = new int[] {0, 0, 0};
+    Product juiceTemp;
+
     static ArrayList<Customer> customers = new ArrayList<>();
 
     static GenerateList cartList = new GenerateCartList();
@@ -283,7 +287,7 @@ public class Main {
         int menuIdx = testScanInt() - 1;
         if (menuIdx == Define.GO_BACK) return;
 
-        excuteIfAvailableIdx(selectMenu, new int[]{categoryIdx, menuIdx});
+        executeIfAvailableIdx(selectMenu, new int[]{categoryIdx, menuIdx});
     }
 
     public int checkCart(Customer customer) {
@@ -308,51 +312,20 @@ public class Main {
                     return Define.TRY_AGAIN;
 
                 } else { // 결제 및 주문 성공
-                    // 얕은 복사. cartProducts 자체를 넣으면 장바구니 비울 때 주문된 리스트들도 함께 지워짐
-                    ArrayList<Product> productsToBuy = (ArrayList<Product>) cartProducts.clone();
-                    ArrayList<Coffee> coffeeMenu = new ArrayList<>();
-                    ArrayList<Beverage> juiceMenu = new ArrayList<>();
-                    ArrayList<Snack> needToBeHeatMenu = new ArrayList<>();
-
-                    ArrayList<Machine> availableCoffeeMachine = new ArrayList<>();
-                    for (Machine coffeeMachine : myCafe.getMachineList().get("커피머신")) {
-                        if (!coffeeMachine.isWorking()) availableCoffeeMachine.add(coffeeMachine);
-                    }
-                    ArrayList<Machine> availableBlender = new ArrayList<>();
-                    for (Machine blender : myCafe.getMachineList().get("믹서")) {
-                        if (!blender.isWorking()) availableBlender.add(blender);
-                    }
-                    ArrayList<Machine> availableMicrowave = new ArrayList<>();
-                    for (Machine microwave : myCafe.getMachineList().get("전자레인지")) {
-                        if (!microwave.isWorking()) availableMicrowave.add(microwave);
-                    }
-
                     for (Product cartProduct : cartProducts) {
-                        switch (cartProduct.getMachine().getClass().getSimpleName()) {
-                            case "Coffee":
-                                if (availableCoffeeMachine.isEmpty()) { // 기계가 모두 작동 중
-                                    Machine theFastestMachine = null;
-                                    int theFastestTime = myCafe.getMachineList().get("커피머신")[0].getTimeRemaining();
-                                    for (Machine coffeeMachine : myCafe.getMachineList().get("커피머신")) {
-                                        if (coffeeMachine.getTimeRemaining() < theFastestTime) {
-                                            theFastestMachine = coffeeMachine;
-                                            theFastestTime = coffeeMachine.getTimeRemaining();
-                                        }
-                                    }
-                                }
-                                break;
+                        Machine machine = cartProduct.getMachine();
 
-                            case "Beverage":
+                        if (machine instanceof CoffeeMachine || machine instanceof Blender || machine instanceof Microwave) {
+                            String machineType = machine.getClass().getSimpleName();
+                            Machine[] machines = myCafe.getMachineList().get(machineType);
+                            int index = getIndex(machineType, cartProduct);
 
-                                break;
-
-                            case "Snack":
-
-                                break;
+                            cartProduct.setMachine(machines[index]);
                         }
                     }
 
-                    myCafe.addOrder(new Order(customer, productsToBuy));
+                    // 얕은 복사. cartProducts 자체를 넣으면 장바구니 비울 때 주문된 리스트들도 함께 지워짐
+                    myCafe.addOrder(new Order(customer, (ArrayList<Product>) cartProducts.clone()));
                     myCafe.increaseSales(calcPrice(cartProducts)); // 매출 증가
                     myCafe.clearCart(); // 장바구니 비우기 (다음 사람을 위해)
 
@@ -377,7 +350,7 @@ public class Main {
                 int indexToDelete = testScanInt() - 1;
 
                 if (indexToDelete == Define.GO_BACK) return Define.TRY_AGAIN;
-                excuteIfAvailableIdx(removeItem, new int[]{indexToDelete});
+                executeIfAvailableIdx(removeItem, new int[]{indexToDelete});
 
                 return Define.TRY_AGAIN;
 
@@ -470,7 +443,7 @@ public class Main {
 
     // IndexOutOfBoundsException 방지 위해서 사용자가 입력한 값이 ArrayList 인덱스 범위 안인지 확인
     // Command라는 인터페이스를 만들어서 자바스크립트의 콜백함수처럼 사용
-    public static void excuteIfAvailableIdx(Command command, int[] idxs) {
+    public static void executeIfAvailableIdx(Command command, int[] idxs) {
 
         ArrayList arr = null;
         int idx = idxs[idxs.length - 1];
@@ -488,7 +461,35 @@ public class Main {
             System.out.println("[Error] 잘못된 입력값입니다.");
             System.out.print(Define.INPUT_SPACE);
             idxs[idxs.length - 1] = testScanInt() - 1;
-            excuteIfAvailableIdx(command, idxs); // 재귀함수
+            executeIfAvailableIdx(command, idxs); // 재귀함수
         }
+    }
+
+    private int getIndex(String machineType, Product product) {
+        int index;
+
+        switch (machineType) {
+            case "CoffeeMachine":
+                index = machineIdxs[Define.COFFEE_MACHINE];
+                machineIdxs[Define.COFFEE_MACHINE] = index + 1;
+                if (machineIdxs[Define.COFFEE_MACHINE] >= myCafe.getMachineList().get(machineType).length) machineIdxs[Define.COFFEE_MACHINE] = 0;
+                break;
+
+            case "Blender":
+                index = machineIdxs[Define.BLENDER];
+                if (!product.equals(juiceTemp)) machineIdxs[Define.BLENDER] = index + 1;
+                if (machineIdxs[Define.BLENDER] >= myCafe.getMachineList().get(machineType).length) machineIdxs[Define.BLENDER] = 0;
+                juiceTemp = product;
+                break;
+            case "Microwave":
+                index = machineIdxs[Define.MICROWAVE];
+                machineIdxs[Define.MICROWAVE] = index + 1;
+                if (machineIdxs[Define.MICROWAVE] >= myCafe.getMachineList().get(machineType).length) machineIdxs[Define.MICROWAVE] = 0;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown machine type: " + machineType);
+        }
+
+        return index;
     }
 }

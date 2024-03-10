@@ -11,4 +11,8 @@ public class Define {
     public static final int GO_BACK = -1;
     public static final int LEAVE = 0;
     public static final int TRY_AGAIN = 1;
+
+    public static final int COFFEE_MACHINE = 0;
+    public static final int BLENDER = 1;
+    public static final int MICROWAVE = 2;
 }

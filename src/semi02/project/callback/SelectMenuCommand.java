@@ -16,7 +16,7 @@ public class SelectMenuCommand implements Command {
 
         if (optionIdx == Define.GO_BACK) return;
 
-        Main.excuteIfAvailableIdx(putInCart, new int[]{categoryIdx, menuIdx, optionIdx});
+        Main.executeIfAvailableIdx(putInCart, new int[]{categoryIdx, menuIdx, optionIdx});
 
     }
 }

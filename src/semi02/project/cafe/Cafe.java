@@ -59,9 +59,9 @@ public class Cafe {
     }
 
     public void installMachines(Machine[] coffeeMachine, Machine[] blender, Machine[] microwave) {
-        this.machineList.put("커피머신", coffeeMachine);
-        this.machineList.put("믹서", blender);
-        this.machineList.put("전자레인지", microwave);
+        this.machineList.put("CoffeeMachine", coffeeMachine);
+        this.machineList.put("Blender", blender);
+        this.machineList.put("Microwave", microwave);
     }
 
     public Map<String, Machine[]> getMachineList() {

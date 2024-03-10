@@ -1,19 +1,19 @@
 package semi02.project.machine;
 
+import semi02.project.cafe.Staff;
+import semi02.project.product.Coffee;
+import semi02.project.product.Product;
+
 public interface Machine {
-    int INITIAL_USAGE = 0;
-
-    public boolean isWorking();
-
     public int getTimeRemaining();
 
     public void reduceTimeRemaining();
 
+    public void addWork(Product product);
+
+    public boolean isWorking();
+
     public void setWorking(boolean working);
-
-    public void increaseUsage();
-
-    public void clearUsage();
 
     public int getRunTime();
 }
