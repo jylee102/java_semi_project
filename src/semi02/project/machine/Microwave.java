@@ -38,9 +38,8 @@ public class Microwave implements Machine {
     }
 
     @Override
-    public int getRunTime() {
-        int time = (int) Math.ceil(remainingWork.size() / (double) MAX_CAPACITY) * RUN_TIME;
-        this.timeRemaining += time;
-        return time;
+    public int getRequiredTime() {
+        timeRemaining = (int) Math.ceil(remainingWork.size() / (double) MAX_CAPACITY) * RUN_TIME;
+        return getTimeRemaining();
     }
 }

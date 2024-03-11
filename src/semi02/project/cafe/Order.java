@@ -45,19 +45,21 @@ public class Order {
         int productionTime = productList.size(); // 대충 메뉴 하나당 1분의 기계 조작 시간 및 준비 시간
 
         for (Product product : productList) {
-            if (product.getMachine() != null) product.getMachine().addWork(product);
-            else productionTime++;
+            if (product.getMachine() != null) product.getMachine().addWork(product); // Machine 객체에 일 목록 할당
+            else if (product.getClass().getSimpleName().equals("Beverage"))
+                productionTime++; // 기계를 사용하지 않는 음료 제조 시간 2분이라고 가정
         }
 
-        TreeSet<Integer> runTimes = new TreeSet<>();
+        // 할당받은 일 목록을 토대로 소요시간 구하기
+        TreeSet<Integer> requiredTimes = new TreeSet<>();
 
         for (String k : myCafe.getMachineList().keySet()) {
             Machine[] v = myCafe.getMachineList().get(k);
             for (Machine machine : v) {
-                runTimes.add(machine.getRunTime());
+                requiredTimes.add(machine.getRequiredTime());
             }
         }
-        productionTime += runTimes.last();
+        productionTime += requiredTimes.last();
 
         return productionTime;
     }

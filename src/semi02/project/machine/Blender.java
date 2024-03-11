@@ -2,14 +2,15 @@ package semi02.project.machine;
 
 import semi02.project.product.Product;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class Blender implements Machine {
-    private final static int RUN_TIME = 5;
+    private final static int RUN_TIME = 4;
 
     private boolean isWorking = false;
 
     private int timeRemaining; // 작동 끝나기까지 남은 시간
+    private Set<Product> workInAnOrder = new HashSet<>(); // 한 주문에 대한 임시 저장 공간 // 동일 손님 동일 주스메뉴 한꺼번에 처리 = 중복 제거
     private ArrayList<Product> remainingWork = new ArrayList<>();
 
     @Override
@@ -24,7 +25,7 @@ public class Blender implements Machine {
 
     @Override
     public void addWork(Product product) {
-        remainingWork.add(product);
+        workInAnOrder.add(product);
     }
 
     @Override
@@ -38,22 +39,11 @@ public class Blender implements Machine {
     }
 
     @Override
-    public int getRunTime() {
-        ArrayList<Product> typeOfWork = null;
+    public int getRequiredTime() {
+        remainingWork.addAll(workInAnOrder);
 
-        // 같은 주스는 한 번에 갈기 // 중복 요소 제거하여 리스트 재구성
-        if (!remainingWork.isEmpty()) {
-            typeOfWork = new ArrayList<>();
+        timeRemaining = remainingWork.size() * RUN_TIME;
 
-            for (Product work : remainingWork) {
-                if (!typeOfWork.contains(work)) {
-                    typeOfWork.add(work);
-                }
-            }
-        }
-
-        int time = (!remainingWork.isEmpty()) ? typeOfWork.size() * RUN_TIME : 0;
-        this.timeRemaining += time;
-        return time;
+        return getTimeRemaining();
     }
 }

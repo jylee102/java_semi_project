@@ -37,9 +37,8 @@ public class CoffeeMachine implements Machine {
     }
 
     @Override
-    public int getRunTime() {
-        int time = remainingWork.size() * RUN_TIME;
-        this.timeRemaining += time;
-        return time;
+    public int getRequiredTime() {
+        timeRemaining = remainingWork.size() * RUN_TIME;
+        return getTimeRemaining();
     }
 }

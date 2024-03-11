@@ -1,7 +1,5 @@
 package semi02.project.machine;
 
-import semi02.project.cafe.Staff;
-import semi02.project.product.Coffee;
 import semi02.project.product.Product;
 
 public interface Machine {
@@ -15,5 +13,5 @@ public interface Machine {
 
     public void setWorking(boolean working);
 
-    public int getRunTime();
+    public int getRequiredTime();
 }
